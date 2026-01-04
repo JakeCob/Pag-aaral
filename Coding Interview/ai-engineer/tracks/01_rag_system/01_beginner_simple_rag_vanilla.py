@@ -110,13 +110,10 @@ class VanillaVectorStore:
                 name=collection_name,
                 metadata={"hnsw:space": "cosine"}  # Use cosine similarity
             )
-        except:
-            # Collection exists, get it
-            self.client.delete_collection(collection_name)
-            self.collection = self.client.create_collection(
-                name=collection_name,
-                metadata={"hnsw:space": "cosine"}
-            )
+        except UniqueConstraintError:
+            # Collection exists, decide: reuse or recreate
+            self.collection = self.client.get_collection(name=collection_name)
+            print(f"Using existing collection: {collection_name}")
 
     def add_documents(
         self,
